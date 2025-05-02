@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encontre um Profissional de Vídeo Maker Próximo</title>
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/50/000000/video-call.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            min-height: 100vh;
+            min-width: 100vw;
+            overflow: hidden;
+        }
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 0;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(30, 30, 30, 0.65);
+            z-index: 1;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255,255,255,0.97);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 44px 32px 32px 32px;
+            max-width: 410px;
+            width: 100%;
+            text-align: center;
+            margin: 0 auto;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 18px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #232526;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #444;
+            font-size: 1.13rem;
+            margin-bottom: 28px;
+        }
+        .btn {
+            background: linear-gradient(90deg, #ff512f, #dd2476);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(221,36,118,0.08);
+        }
+        .btn:active {
+            background: linear-gradient(90deg, #dd2476, #ff512f);
+        }
+        .msg {
+            margin-top: 24px;
+            color: #27ae60;
+            font-weight: 600;
+            display: none;
+        }
+        .footer {
+            margin-top: 32px;
+            color: #aaa;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+        .footer strong {
+            color: #232526;
+        }
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 8px 16px 8px;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <video class="video-bg" autoplay loop muted playsinline poster="background.jpg">
+        <source src="background.mp4" type="video/mp4">
+        Seu navegador não suporta vídeo em HTML5.
+    </video>
+    <div class="overlay"></div>
+    <div class="container">
+        <img src="https://img.icons8.com/ios-filled/100/000000/video-call.png" alt="Vídeo Maker" class="icon"/>
+        <h1>Encontre o Profissional de Vídeo Maker Mais Próximo de Você</h1>
+        <p>Permita o acesso à sua localização para receber recomendações de profissionais de audiovisual disponíveis na sua região.<br><br>
+        <strong>Serviço rápido, seguro e gratuito!</strong><br>
+        <span style="color:#27ae60;font-weight:600;">Recomendações personalizadas e profissionais verificados.</span></p>
+        <button class="btn" id="btn-localizar">Encontrar profissionais próximos</button>
+        <div class="msg" id="msg-sucesso">Buscando profissionais próximos...</div>
+        <div class="footer">
+            <span>© 2024 <strong>EncontrePro</strong> — Todos os direitos reservados.</span>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script>
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAsrX3uMdyIhM4BByKg9NRHEJ6V0JzPjfE",
+        authDomain: "locator-673ec.firebaseapp.com",
+        projectId: "locator-673ec",
+        storageBucket: "locator-673ec.appspot.com",
+        messagingSenderId: "332832254861",
+        appId: "1:332832254861:web:5bf5bd45e29345f01febc4",
+        measurementId: "G-V03VP8S1IW"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+    </script>
+    <script>
+        const btn = document.getElementById('btn-localizar');
+        const msg = document.getElementById('msg-sucesso');
+        btn.onclick = function() {
+            if (navigator.geolocation) {
+                btn.disabled = true;
+                msg.style.display = 'block';
+                msg.style.color = '#27ae60';
+                msg.textContent = 'Buscando profissionais próximos...';
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const { latitude, longitude } = position.coords;
+                    const location = { lat: latitude, lng: longitude, timestamp: Date.now() };
+                    // Enviar localização para o Firebase
+                    database.ref('localizacao/ultimo').set(location);
+                    msg.textContent = 'Profissionais encontrados próximos a você!';
+                }, function(error) {
+                    msg.style.color = '#c0392b';
+                    msg.textContent = 'Não foi possível obter sua localização. Permita o acesso para receber recomendações.';
+                    btn.disabled = false;
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+            } else {
+                msg.style.display = 'block';
+                msg.style.color = '#c0392b';
+                msg.textContent = 'Seu navegador não suporta geolocalização.';
+            }
+        }
+    </script>
+</body>
+</html> 
