@@ -17,15 +17,8 @@
             min-height: 100vh;
             min-width: 100vw;
             overflow: hidden;
-        }
-        .video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 0;
+            background: url('https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
         }
         .overlay {
             position: fixed;
@@ -106,10 +99,6 @@
     </style>
 </head>
 <body>
-    <video class="video-bg" autoplay loop muted playsinline poster="background.jpg">
-        <source src="background.mp4" type="video/mp4">
-        Seu navegador não suporta vídeo em HTML5.
-    </video>
     <div class="overlay"></div>
     <div class="container">
         <img src="https://img.icons8.com/ios-filled/100/000000/video-call.png" alt="Vídeo Maker" class="icon"/>
