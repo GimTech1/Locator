@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Rastreamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .online {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .offline {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Painel de Rastreamento</h1>
+        <div id="status" class="status">Aguardando localização...</div>
+        <div id="map"></div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script>
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAsrX3uMdyIhM4BByKg9NRHEJ6V0JzPjfE",
+        authDomain: "locator-673ec.firebaseapp.com",
+        projectId: "locator-673ec",
+        storageBucket: "locator-673ec.appspot.com",
+        messagingSenderId: "332832254861",
+        appId: "1:332832254861:web:5bf5bd45e29345f01febc4",
+        measurementId: "G-V03VP8S1IW"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+    </script>
+    <script>
+        let map;
+        let marker;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: { lat: -23.5505, lng: -46.6333 } // Centro inicial
+            });
+        }
+
+        function atualizarMapa(location) {
+            if (!location) return;
+            const pos = { lat: location.lat, lng: location.lng };
+            if (marker) {
+                marker.setMap(null);
+            }
+            marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: 'Última Localização'
+            });
+            map.setCenter(pos);
+            // Atualizar status
+            const data = new Date(location.timestamp);
+            document.getElementById('status').className = 'status online';
+            document.getElementById('status').textContent = `Última atualização: ${data.toLocaleString()}`;
+        }
+
+        // Ouvir atualizações em tempo real do Firebase
+        database.ref('localizacao/ultimo').on('value', (snapshot) => {
+            const location = snapshot.val();
+            if (location) {
+                atualizarMapa(location);
+            } else {
+                document.getElementById('status').className = 'status offline';
+                document.getElementById('status').textContent = 'Nenhuma localização recebida ainda.';
+            }
+        });
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtwnniTrQlU0hMxIORG6A1blnxvuA0dDI&callback=initMap">
+    </script>
+</body>
+</html> 
